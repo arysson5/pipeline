@@ -1,6 +1,8 @@
 import streamlit as st
-import contrato
+from contrato import Vendas
 from datetime import datetime, time
+from pydantic import ValidationError
+from database import salvar_no_postgres
 
 def main():
 
@@ -15,12 +17,22 @@ def main():
 
     if st.button("Enviar venda"):
         data_hora = datetime.combine(data, hora)
-        st.write("**Venda enviada com sucesso!**")
-        st.write(f"Email do vendedor: {email}")
-        st.write(f"Data e hora da compra: {data_hora}")
-        st.write(f"Valor da Venda: R$ {valor}")
-        st.write(f"Quantidade de Produtos: {qtde}")
-        st.write(f"Produto: {produto}")
+        try:
+            vendas = Vendas(
+
+            email = email,
+            data = data_hora,
+            valor = valor,
+            qtde = qtde,
+            produto = produto
+            )
+            salvar_no_postgres(vendas)
+        except ValidationError as e:
+            st.error("Erro ao enviar venda: " + str(e))
+        
+        
+
+        
 
 if __name__ == "__main__":
     main()
